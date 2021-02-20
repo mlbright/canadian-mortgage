@@ -10,9 +10,14 @@ There are no prepayment options included in this calculator.
 
 For a more flexible and complete mortgage calculator, visit the [mortgage calculator][canadian-mortgage-calculator] from the Financial Consumer Agency of Canada.
 
+## Usage
+
+```bash
+```
+
 ## TODO
 
-- [] Replicate all the other behaviour from a [more complete calculator][canadian-mortgage-calculator]
+- [ ] Replicate all the other behaviour from a [more complete calculator][canadian-mortgage-calculator]
 
 ## Things I learned or re-learned
 
