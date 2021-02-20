@@ -9,14 +9,14 @@ pub enum PaymentFrequency {
     AcceleratedWeekly,
 }
 
-pub struct CanadianMortage {
+pub struct CanadianMortgage {
     principal: Decimal,
     interest_rate: Decimal,
     amortization_period: u64,
     payment_frequency: PaymentFrequency,
 }
 
-impl CanadianMortage {
+impl CanadianMortgage {
     // mortgage_amount is the principal.
     // interest_rate is the annual interest rate as a percentage: 6.5% means r = 0.065 per year (see mortgage_payment below).
     // amortization_period is the number of years over which you will repay this loan.
@@ -26,7 +26,7 @@ impl CanadianMortage {
         interest_rate: Decimal,
         amortization_period: u64,
         payment_frequency: PaymentFrequency,
-    ) -> anyhow::Result<CanadianMortage> {
+    ) -> anyhow::Result<CanadianMortgage> {
         if interest_rate < dec!(0.0) || interest_rate > dec!(100.0) {
             anyhow::anyhow!("interest rate is the annual interest rate be between 0% and 100%");
         }
@@ -38,7 +38,7 @@ impl CanadianMortage {
         // This is the strangeness of Canadian mortgages.
         let interest_rate = convert_compounding_basis(interest_rate, 2, 12)?;
 
-        Ok(CanadianMortage {
+        Ok(CanadianMortgage {
             principal: mortgage_amount,
             interest_rate: interest_rate,
             amortization_period: amortization_period,
@@ -147,7 +147,7 @@ mod tests {
     #[test]
     fn canadian_mortgage_payments_are_valid() {
         assert_eq!(
-            CanadianMortage::new(
+            CanadianMortgage::new(
                 dec!(430000.0),
                 dec!(4.59),
                 25,
@@ -161,7 +161,7 @@ mod tests {
         );
 
         assert_eq!(
-            CanadianMortage::new(
+            CanadianMortgage::new(
                 dec!(430000.0),
                 dec!(4.59),
                 25,
@@ -175,7 +175,7 @@ mod tests {
         );
 
         assert_eq!(
-            CanadianMortage::new(dec!(430000.0), dec!(4.59), 25, PaymentFrequency::Monthly)
+            CanadianMortgage::new(dec!(430000.0), dec!(4.59), 25, PaymentFrequency::Monthly)
                 .unwrap()
                 .payment()
                 .unwrap(),
@@ -184,7 +184,7 @@ mod tests {
         );
 
         assert_eq!(
-            CanadianMortage::new(dec!(100000.0), dec!(6), 25, PaymentFrequency::Monthly)
+            CanadianMortgage::new(dec!(100000.0), dec!(6), 25, PaymentFrequency::Monthly)
                 .unwrap()
                 .payment()
                 .unwrap(),
@@ -193,7 +193,7 @@ mod tests {
         );
 
         assert_eq!(
-            CanadianMortage::new(dec!(100000.0), dec!(5), 25, PaymentFrequency::Monthly)
+            CanadianMortgage::new(dec!(100000.0), dec!(5), 25, PaymentFrequency::Monthly)
                 .unwrap()
                 .payment()
                 .unwrap(),
