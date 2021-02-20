@@ -1,22 +1,24 @@
-# Canadian mortgage library
+# canadian-mortgage
 
-> library to calculate Canadian mortage payments
+> library to calculate Canadian mortgage payments
 
 This library calculates payments on Canadian mortages.
 Canadian mortages are compounded semi-annually but payments are typically made monthly.
-This means that rates must be [converted][compounding-basis] to accurately compute mortgage payments.
+This means that rates must be [converted][compounding-basis] to accurately compute mortgage payments. 
 
 There are no prepayment options included in this calculator.
 
 For a more flexible and complete mortgage calculator, visit the [mortgage calculator][canadian-mortgage-calculator] from the Financial Consumer Agency of Canada.
 
-## Things I learned
+## TODO
 
-Items I explored or learned something about:
+- [] Replicate all the other behaviour from a [more complete calculator][canadian-mortgage-calculator]
+
+## Things I learned or re-learned
 
 - [x] [floating point and decimal representation][floating-point-guide]
 - [x] Writing tests in Rust
-- [x] Mortgage math, specifically in the Canadian context
+- [x] [Mortgage math, specifically in the Canadian context][semi-annually]
 - [x] Writing a Rust library, as opposed to a binary
 - [ ] Web assembly widget
 
