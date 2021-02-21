@@ -64,17 +64,36 @@ impl CanadianMortgage {
 
         Ok(payment)
     }
+
+    pub fn affordability(&self, payment: Decimal) -> anyhow::Result<Decimal> {
+        Ok(affordability(
+            payment,
+            self.interest_rate / dec!(12),
+            self.amortization_period * 12,
+        )?)
+    }
 }
 
 // https://en.wikipedia.org/wiki/Mortgage_loan
 // https://www.yorku.ca/amarshal/mortgage.htm
-// a = p * r * (1 + r)**n / ((1+r)**n - 1)
+// a = p * r * (1 + r)**n / ((1 + r)**n - 1)
 // a is the periodic amortization payment
 // p is the principal amount borrowed
 // r is the rate of interest expressed as a fraction; for a monthly payment, take the annual rate divided by 12
 // n is the number of payments; for monthly payments over 30 years, 12 months x 30 years = 360 payments.
 fn mortgage_payment(p: Decimal, r: Decimal, n: u64) -> anyhow::Result<Decimal> {
-    Ok(p * r * (dec!(1.0) + r).powi(n) / ((dec!(1.0) + r).powi(n) - dec!(1.0)))
+    let c = (dec!(1.0) + r).powi(n);
+    Ok(p * r * c / (c - dec!(1.0)))
+}
+
+// p = a * ((1 + r)**n - 1) / r / (1 + r)**n
+// a is the periodic amortization payment
+// p is the principal amount borrowed
+// r is the rate of interest expressed as a fraction; for a monthly payment, take the annual rate divided by 12
+// n is the number of payments; for monthly payments over 30 years, 12 months x 30 years = 360 payments.
+fn affordability(a: Decimal, r: Decimal, n: u64) -> anyhow::Result<Decimal> {
+    let c = (dec!(1.0) + r).powi(n);
+    Ok(a * (c - dec!(1.0)) / r / c)
 }
 
 // https://en.wikipedia.org/wiki/Compound_interest#Compounding_basis
@@ -199,6 +218,20 @@ mod tests {
                 .unwrap(),
             dec!(581.60498503699913800017437566),
             "small Canadian mortgage"
+        );
+    }
+
+    #[test]
+    fn affordability_is_valid() {
+        let mortgage =
+            CanadianMortgage::new(dec!(100000.0), dec!(1.79), 30, PaymentFrequency::Monthly)
+                .unwrap();
+        assert_eq!(
+            mortgage
+                .affordability(dec!(3050.4832853902146098484828448))
+                .unwrap(),
+            dec!(850000),
+            "madness"
         );
     }
 }
