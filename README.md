@@ -1,8 +1,7 @@
 # canadian-mortgage
 
-> library to calculate Canadian mortgage payments
+> Library to calculate Canadian mortgage payments
 
-This library calculates payments on Canadian mortages.
 Canadian mortages are compounded semi-annually but payments are typically made monthly.
 This means that rates must be [converted][compounding-basis] to accurately compute mortgage payments. 
 
