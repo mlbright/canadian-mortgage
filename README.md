@@ -15,14 +15,12 @@ For a more flexible and complete mortgage calculator, visit the [mortgage calcul
 use rust_decimal_macros::*;
 fn main() {
     let mortgage = canadian_mortgage::CanadianMortgage::new(
-        dec!(500000),
         dec!(4.59),
         25,
         canadian_mortgage::PaymentFrequency::Monthly,
     )
     .unwrap();
-    println!("mortgage payment: {}", mortgage.payment().unwrap());
-}
+    println!("mortgage payment: {}", mortgage.payment(dec!(500000)).unwrap());
 ```
 
 ## TODO

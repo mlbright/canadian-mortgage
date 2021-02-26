@@ -10,7 +10,6 @@ pub enum PaymentFrequency {
 }
 
 pub struct CanadianMortgage {
-    principal: Decimal,
     interest_rate: Decimal,
     amortization_period: u64,
     payment_frequency: PaymentFrequency,
@@ -22,7 +21,6 @@ impl CanadianMortgage {
     // amortization_period is the number of years over which you will repay this loan.
     // payment_frequency determines the number of payments, which is also the compounding interval frequency.
     pub fn new(
-        mortgage_amount: Decimal,
         interest_rate: Decimal,
         amortization_period: u64,
         payment_frequency: PaymentFrequency,
@@ -39,16 +37,15 @@ impl CanadianMortgage {
         let interest_rate = convert_compounding_basis(interest_rate, 2, 12)?;
 
         Ok(CanadianMortgage {
-            principal: mortgage_amount,
             interest_rate: interest_rate,
             amortization_period: amortization_period,
             payment_frequency,
         })
     }
 
-    pub fn payment(&self) -> anyhow::Result<Decimal> {
+    pub fn payment(&self, principal: Decimal) -> anyhow::Result<Decimal> {
         let monthly_payment = mortgage_payment(
-            self.principal,
+            principal,
             self.interest_rate / dec!(12),
             self.amortization_period * 12,
         )?;
@@ -110,6 +107,7 @@ fn convert_compounding_basis(
             compounding_frequency1
         )
     })?;
+
     let n2 = Decimal::from_u64(compounding_frequency2).ok_or_else(|| {
         anyhow::anyhow!(
             "could not convert u64 to Decimal: {}",
@@ -124,6 +122,7 @@ fn fractional_exponent(base: Decimal, exponent: Decimal) -> anyhow::Result<Decim
     let base = base
         .to_f64()
         .ok_or_else(|| anyhow::anyhow!("could not convert Decimal to f64: {}", base))?;
+
     let exponent = exponent
         .to_f64()
         .ok_or_else(|| anyhow::anyhow!("could not convert Decimal to f64: {}", exponent))?;
@@ -166,55 +165,45 @@ mod tests {
     #[test]
     fn canadian_mortgage_payments_are_valid() {
         assert_eq!(
-            CanadianMortgage::new(
-                dec!(430000.0),
-                dec!(4.59),
-                25,
-                PaymentFrequency::AcceleratedWeekly,
-            )
-            .unwrap()
-            .payment()
-            .unwrap(),
+            CanadianMortgage::new(dec!(4.59), 25, PaymentFrequency::AcceleratedWeekly,)
+                .unwrap()
+                .payment(dec!(430000.0))
+                .unwrap(),
             dec!(600.37384132280845354662242562),
             "old Canadian mortgage, accelerated weekly payments"
         );
 
         assert_eq!(
-            CanadianMortgage::new(
-                dec!(430000.0),
-                dec!(4.59),
-                25,
-                PaymentFrequency::AcceleratedBiWeekly,
-            )
-            .unwrap()
-            .payment()
-            .unwrap(),
+            CanadianMortgage::new(dec!(4.59), 25, PaymentFrequency::AcceleratedBiWeekly,)
+                .unwrap()
+                .payment(dec!(430000.0))
+                .unwrap(),
             dec!(1200.7476826456169070932448512),
             "old Canadian mortgage, accelerated weekly payments"
         );
 
         assert_eq!(
-            CanadianMortgage::new(dec!(430000.0), dec!(4.59), 25, PaymentFrequency::Monthly)
+            CanadianMortgage::new(dec!(4.59), 25, PaymentFrequency::Monthly)
                 .unwrap()
-                .payment()
+                .payment(dec!(430000.0))
                 .unwrap(),
             dec!(2401.4953652912338141864897025),
             "old Canadian mortgage"
         );
 
         assert_eq!(
-            CanadianMortgage::new(dec!(100000.0), dec!(6), 25, PaymentFrequency::Monthly)
+            CanadianMortgage::new(dec!(6), 25, PaymentFrequency::Monthly)
                 .unwrap()
-                .payment()
+                .payment(dec!(100000.0))
                 .unwrap(),
             dec!(639.80662367674280200695111231),
             "tiny Canadian mortgage"
         );
 
         assert_eq!(
-            CanadianMortgage::new(dec!(100000.0), dec!(5), 25, PaymentFrequency::Monthly)
+            CanadianMortgage::new(dec!(5), 25, PaymentFrequency::Monthly)
                 .unwrap()
-                .payment()
+                .payment(dec!(100000.0))
                 .unwrap(),
             dec!(581.60498503699913800017437566),
             "small Canadian mortgage"
@@ -223,9 +212,7 @@ mod tests {
 
     #[test]
     fn affordability_is_valid() {
-        let mortgage =
-            CanadianMortgage::new(dec!(100000.0), dec!(1.79), 30, PaymentFrequency::Monthly)
-                .unwrap();
+        let mortgage = CanadianMortgage::new(dec!(1.79), 30, PaymentFrequency::Monthly).unwrap();
         assert_eq!(
             mortgage
                 .affordability(dec!(3050.4832853902146098484828448))
