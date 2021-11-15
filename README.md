@@ -21,6 +21,7 @@ fn main() {
     )
     .unwrap();
     println!("mortgage payment: {}", mortgage.payment(dec!(500000)).unwrap());
+}
 ```
 
 ## TODO
